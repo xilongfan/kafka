@@ -1,0 +1,53 @@
+[Unit]
+Description=Kafka
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=KAFKA_HOME=/usr/share/kafka
+Environment=CONF_DIR=${path.conf}
+Environment=DATA_DIR=/var/lib/kafka
+Environment=LOG_DIR=/var/log/kafka
+Environment=PID_DIR=/var/run/kafka
+EnvironmentFile=-${path.env}
+
+WorkingDirectory=/usr/share/kafka
+
+User=kafka
+Group=kafka
+
+ExecStartPre=/usr/share/kafka/bin/kafka-systemd-pre-exec
+
+ExecStart=/usr/share/kafka/bin/kafka \
+                                                -p ${PID_DIR}/kafka.pid \
+                                                -Ees.default.path.logs=${LOG_DIR} \
+                                                -Ees.default.path.data=${DATA_DIR} \
+                                                -Ees.default.path.conf=${CONF_DIR}
+
+StandardOutput=journal
+StandardError=inherit
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+# Specifies the maximum number of bytes of memory that may be locked into RAM
+# Set to "infinity" if you use the 'bootstrap.mlockall: true' option
+# in kafka.yml and 'MAX_LOCKED_MEMORY=unlimited' in ${path.env}
+#LimitMEMLOCK=infinity
+
+# Disable timeout logic and wait until process is stopped
+TimeoutStopSec=0
+
+# SIGTERM signal is used to stop the Java process
+KillSignal=SIGTERM
+
+# Java process is never killed
+SendSIGKILL=no
+
+# When a JVM receives a SIGTERM signal it exits with code 143
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
+
+# Built for ${project.name}-${project.version} (${project.name})

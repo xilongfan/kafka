@@ -1,0 +1,12 @@
+task buildZip(type: Zip) {
+  baseName = 'kafka'
+  with archivesFiles
+}
+
+artifacts {
+  'default' buildZip
+  archives buildZip
+}
+
+integTest.dependsOn buildZip
+
